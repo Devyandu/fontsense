@@ -12,8 +12,10 @@ FontSense takes an input CSV file with URLs, visits each website, and detects al
 - **ListOfFontUrls**: The URLs from which the font files are loaded.
 
 ## How to Use It 🚀
-
+create a file with name inputurls.csv and the header row as URL with a list of URLs that need a font check. The script will generate a file with name output.csv
 1. **Clone the Repository**:
    ```sh
    git clone https://github.com/Devyandu/fontsense.git
    cd fontsense
+   npm install
+   
