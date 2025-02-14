@@ -10,6 +10,7 @@ const csvWriter = createCsvWriter({
   path: outputFilePath,
   header: [
     { id: 'OriginalURL', title: 'OriginalURL' },
+    { id: 'FontFound', title: 'FontFound' },
     { id: 'RedirectedURL', title: 'RedirectedURL' },
     { id: 'Status', title: 'Status' },
     { id: 'StatusMessage', title: 'StatusMessage' },
@@ -40,10 +41,19 @@ async function getFontInfo(url) {
       return fontNameMatch ? fontNameMatch[1] : '';
     }).join(', ');
 
+    const fontFound = [];
+    if (Array.from(fontUrls).some(fontUrl => fontUrl.toLowerCase().includes('gotham'))) {
+      fontFound.push('Gotham');
+    }
+    if (Array.from(fontUrls).some(fontUrl => fontUrl.toLowerCase().includes('avenir'))) {
+      fontFound.push('Avenir');
+    }
+
     await browser.close();
 
     return {
       OriginalURL: url,
+      FontFound: fontFound.join(', '),
       RedirectedURL: redirectedURL,
       Status: 'Success',
       StatusMessage: 'Page retrieved successfully',
@@ -55,6 +65,7 @@ async function getFontInfo(url) {
     await browser.close();
     return {
       OriginalURL: url,
+      FontFound: '',
       RedirectedURL: '',
       Status: 'Error',
       StatusMessage: error.message,
