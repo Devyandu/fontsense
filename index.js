@@ -11,6 +11,8 @@ const csvWriter = createCsvWriter({
   header: [
     { id: 'OriginalURL', title: 'OriginalURL' },
     { id: 'RedirectedURL', title: 'RedirectedURL' },
+    { id: 'Status', title: 'Status' },
+    { id: 'StatusMessage', title: 'StatusMessage' },
     { id: 'ListofFontNames', title: 'ListofFontNames' },
     { id: 'ListOfFontUrls', title: 'ListOfFontUrls' }
   ]
@@ -43,6 +45,8 @@ async function getFontInfo(url) {
     return {
       OriginalURL: url,
       RedirectedURL: redirectedURL,
+      Status: 'Success',
+      StatusMessage: 'Page retrieved successfully',
       ListofFontNames: fontNames,
       ListOfFontUrls: Array.from(fontUrls).join(', ')
     };
@@ -52,6 +56,8 @@ async function getFontInfo(url) {
     return {
       OriginalURL: url,
       RedirectedURL: '',
+      Status: 'Error',
+      StatusMessage: error.message,
       ListofFontNames: '',
       ListOfFontUrls: ''
     };
@@ -63,7 +69,11 @@ async function processUrls() {
   fs.createReadStream(inputFilePath)
     .pipe(csv())
     .on('data', (row) => {
-      urls.push(row.URL);
+      let url = row.URL;
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+      }
+      urls.push(url);
     })
     .on('end', async () => {
       const results = [];
