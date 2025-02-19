@@ -1,9 +1,8 @@
 const fs = require('fs');
-const csv = require('csv-parser');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const puppeteer = require('puppeteer');
 
-const inputFilePath = 'inputurls.csv';
+const inputFilePath = 'inputurls.txt';
 const outputFilePath = 'output.csv';
 
 const csvWriter = createCsvWriter({
@@ -19,8 +18,8 @@ const csvWriter = createCsvWriter({
   ]
 });
 
-async function getFontInfo(url) {
-  console.log(`Processing URL: ${url}`);
+async function getFontInfo(url, index, total) {
+  console.log(`Processing URL: ${url} (Processing ${index + 1} of ${total} URLs)`);
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
   const fontUrls = new Set();
@@ -33,7 +32,7 @@ async function getFontInfo(url) {
   });
 
   try {
-    const response = await page.goto(url, { waitUntil: 'networkidle2' });
+    const response = await page.goto(url, { waitUntil: 'networkidle2', timeout: 7000 }); // Set timeout to 10 seconds
     const redirectedURL = response.url();
 
     const fontNames = Array.from(fontUrls).map(fontUrl => {
@@ -76,25 +75,20 @@ async function getFontInfo(url) {
 }
 
 async function processUrls() {
-  const urls = [];
-  fs.createReadStream(inputFilePath)
-    .pipe(csv())
-    .on('data', (row) => {
-      let url = row.URL;
-      if (!url.startsWith('http://') && !url.startsWith('https://')) {
-        url = 'https://' + url;
-      }
-      urls.push(url);
-    })
-    .on('end', async () => {
-      const results = [];
-      for (const url of urls) {
-        const result = await getFontInfo(url);
-        results.push(result);
-      }
-      await csvWriter.writeRecords(results);
-      console.log('CSV file written successfully');
-    });
+  const urls = fs.readFileSync(inputFilePath, 'utf-8').split('\n').filter(Boolean);
+  const totalUrls = urls.length;
+  const results = [];
+  for (let i = 0; i < totalUrls; i++) {
+    const url = urls[i];
+    let validUrl = url;
+    if (!validUrl.startsWith('http://') && !validUrl.startsWith('https://')) {
+      validUrl = 'https://' + validUrl;
+    }
+    const result = await getFontInfo(validUrl, i, totalUrls);
+    results.push(result);
+  }
+  await csvWriter.writeRecords(results);
+  console.log('CSV file written successfully');
 }
 
 processUrls();
