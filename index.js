@@ -32,7 +32,7 @@ async function getFontInfo(url, index, total) {
   });
 
   try {
-    const response = await page.goto(url, { waitUntil: 'networkidle2', timeout: 7000 }); // Set timeout to 10 seconds
+    const response = await page.goto(url, { waitUntil: 'networkidle2', timeout: 10000 }); // Set timeout to 10 seconds
     const redirectedURL = response.url();
 
     const fontNames = Array.from(fontUrls).map(fontUrl => {
@@ -75,7 +75,10 @@ async function getFontInfo(url, index, total) {
 }
 
 async function processUrls() {
-  const urls = fs.readFileSync(inputFilePath, 'utf-8').split('\n').filter(Boolean);
+  const urls = fs.readFileSync(inputFilePath, 'utf-8')
+    .replace(/\r\n/g, '\n') // Normalize newlines to LF
+    .split('\n')
+    .filter(Boolean);
   const totalUrls = urls.length;
   const results = [];
   for (let i = 0; i < totalUrls; i++) {
